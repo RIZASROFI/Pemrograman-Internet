@@ -1,0 +1,57 @@
+name: meat_freshness_monitor
+description: Aplikasi monitoring kesegaran daging sapi berbasis IoT dan Firebase
+
+# Versi aplikasi
+version: 1.0.0+1
+
+# Kompatibilitas Flutter SDK
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # === 🔥 Firebase Dependencies ===
+  firebase_core: ^3.4.0               # Inisialisasi Firebase
+  cloud_firestore: ^5.5.0             # Database realtime (Firestore)
+  firebase_auth: ^5.4.0               # Autentikasi user
+  firebase_messaging: ^15.1.3         # Notifikasi push (FCM)
+  firebase_storage: ^12.3.3           # Simpan file (opsional, misal gambar daging)
+
+  # === 🎨 UI & Grafik ===
+  fl_chart: ^0.65.0                   # Untuk menampilkan grafik sensor (line chart, bar chart)
+  google_fonts: ^6.2.1                # Font yang lebih modern dan elegan
+
+  # === 🧠 State Management & Utility ===
+  provider: ^6.1.1                    # Manajemen state (AuthService, SensorService, dsb)
+  intl: ^0.19.0                       # Format waktu/tanggal
+
+  # === 💬 Notifikasi & Izin ===
+  flutter_local_notifications: ^17.1.2 # Untuk notifikasi lokal
+  permission_handler: ^11.3.0          # Minta izin notifikasi atau akses sensor
+
+  # === 🌐 IoT / Realtime Sync (opsional) ===
+  mqtt_client: ^10.2.1                # Jika nanti ingin kirim data via MQTT (ESP32 → App)
+  http: ^1.2.2                        # Untuk akses REST API eksternal jika diperlukan
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # === 🖼️ Aset Aplikasi ===
+  assets:
+    - assets/icons/
+    - assets/images/
+
+  # === 🔤 Font Kustom (Opsional) ===
+ # fonts:
+  #  - family: Poppins
+    #  fonts:
+      # - asset: assets/fonts/Poppins-Regular.ttf
+      #  - asset: assets/fonts/Poppins-Bold.ttf
+      #   weight: 700
