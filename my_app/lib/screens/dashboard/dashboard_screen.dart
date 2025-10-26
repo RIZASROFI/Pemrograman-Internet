@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/sensor_chart.dart';
 import '../../widgets/sensor_card.dart';
 import '../../models/sensor_data.dart' as model;
+import '../sensor/sensor_detail_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -487,9 +488,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _navigateToSensorDetail(String sensorType) {
-    // TODO: Navigate to sensor detail screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigating to $sensorType detail')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SensorDetailScreen(sensorType: sensorType),
+      ),
     );
   }
 
