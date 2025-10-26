@@ -29,8 +29,8 @@ class SensorChart extends StatelessWidget {
         if (snapshot.hasError) {
           return SizedBox(
             height: 120,
-            child: Center(
-                child: Text('Error loading chart: ${snapshot.error}')),
+            child:
+                Center(child: Text('Error loading chart: ${snapshot.error}')),
           );
         }
 
@@ -49,11 +49,11 @@ class SensorChart extends StatelessWidget {
           );
         }
 
-    final data = snapshot.data!;
-    final values = data
-      .map((d) => valueGetter(d).isNaN ? 0.0 : valueGetter(d))
-      .toList();
-    final times = data.map((d) => d.timestamp).toList();
+        final data = snapshot.data!;
+        final values = data
+            .map((d) => valueGetter(d).isNaN ? 0.0 : valueGetter(d))
+            .toList();
+        final times = data.map((d) => d.timestamp).toList();
 
         Widget chartWidget;
 
@@ -78,7 +78,27 @@ class SensorChart extends StatelessWidget {
             BarChartData(
               alignment: BarChartAlignment.spaceBetween,
               barGroups: groups,
-              gridData: FlGridData(show: false),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: true,
+                drawHorizontalLine: true,
+                horizontalInterval: 10,
+                verticalInterval: 5,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  );
+                },
+                getDrawingVerticalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  );
+                },
+              ),
               titlesData: FlTitlesData(
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
@@ -86,16 +106,29 @@ class SensorChart extends StatelessWidget {
                     reservedSize: 36,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx < 0 || idx >= times.length) return const SizedBox.shrink();
+                      if (idx < 0 || idx >= times.length)
+                        return const SizedBox.shrink();
                       if (idx % step != 0) return const SizedBox.shrink();
                       final dt = times[idx];
-                      return Text(DateFormat('HH:mm').format(dt), style: const TextStyle(fontSize: 10));
+                      return Text(DateFormat('HH:mm').format(dt),
+                          style: const TextStyle(fontSize: 10));
                     },
                   ),
                 ),
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    getTitlesWidget: (value, meta) {
+                      return Text(value.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 10));
+                    },
+                  ),
+                ),
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
               borderData: FlBorderData(show: false),
               barTouchData: BarTouchData(
@@ -105,9 +138,14 @@ class SensorChart extends StatelessWidget {
                     final dt = times[group.x.toInt()];
                     return BarTooltipItem(
                       '${DateFormat('yyyy-MM-dd HH:mm').format(dt)}\n',
-                      const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                       children: [
-                        TextSpan(text: '${rod.toY.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.normal))
+                        TextSpan(
+                            text: '${rod.toY.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.normal))
                       ],
                     );
                   },
@@ -126,7 +164,27 @@ class SensorChart extends StatelessWidget {
 
           chartWidget = LineChart(
             LineChartData(
-              gridData: FlGridData(show: false),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: true,
+                drawHorizontalLine: true,
+                horizontalInterval: 10,
+                verticalInterval: 5,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  );
+                },
+                getDrawingVerticalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  );
+                },
+              ),
               titlesData: FlTitlesData(
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
@@ -134,16 +192,29 @@ class SensorChart extends StatelessWidget {
                     reservedSize: 36,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx < 0 || idx >= times.length) return const SizedBox.shrink();
+                      if (idx < 0 || idx >= times.length)
+                        return const SizedBox.shrink();
                       if (idx % step != 0) return const SizedBox.shrink();
                       final dt = times[idx];
-                      return Text(DateFormat('HH:mm').format(dt), style: const TextStyle(fontSize: 10));
+                      return Text(DateFormat('HH:mm').format(dt),
+                          style: const TextStyle(fontSize: 10));
                     },
                   ),
                 ),
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    getTitlesWidget: (value, meta) {
+                      return Text(value.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 10));
+                    },
+                  ),
+                ),
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
               borderData: FlBorderData(show: false),
               lineTouchData: LineTouchData(
