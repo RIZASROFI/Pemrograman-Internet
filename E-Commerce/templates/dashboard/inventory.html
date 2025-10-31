@@ -1,0 +1,586 @@
+{% extends 'base.html' %}
+{% block title %}Inventory - E-Commerce{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-2 mb-md-0">Inventori</h1>
+    <div class="btn-group">
+      <div class="dropdown">
+        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="tambahDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-plus me-1"></i>Tambah
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="tambahDropdown">
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryItemModal">Tambahkan Item Inventaris</a></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addItemTypeModal">Tambahkan Jenis Barang</a></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addItemModal">Tambahkan Barang</a></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#manageCategoriesModal">Kategori</a></li>
+        </ul>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-import me-1"></i>Impor</button>
+      <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-export me-1"></i>Ekspor</button>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form class="row g-2" method="get">
+        <div class="col-md-4">
+          <input type="text" name="q" value="{{ query.q }}" class="form-control" placeholder="Cari nama / SKU">
+        </div>
+        <div class="col-md-3">
+          <select name="category" class="form-select">
+            <option value="">Semua Kategori</option>
+            {% for c in all_categories %}
+              <option value="{{ c }}" {% if query.category == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select name="status" class="form-select">
+            <option value="">Semua Status</option>
+            {% for s in all_statuses %}
+              <option value="{{ s }}" {% if query.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Filter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header py-2">Total Item</div>
+        <div class="card-body py-3">
+          <div class="h4 mb-0">{{ summary.total_items }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header py-2">Total Stok</div>
+        <div class="card-body py-3">
+          <div class="h4 mb-0">{{ summary.total_stock }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header py-2">Nilai Persediaan</div>
+        <div class="card-body py-3">
+          <div class="h4 mb-0">Rp {{ summary.total_value|floatformat:0 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header py-2">Stok Rendah</div>
+        <div class="card-body py-3">
+          <div class="h4 mb-0">{{ summary.low_stock }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Nama</th>
+              <th>Kategori</th>
+              <th class="text-end">Stok</th>
+              <th class="text-end">Min Stok</th>
+              <th>Satuan</th>
+              <th class="text-end">Harga Beli</th>
+              <th class="text-end">Harga Jual</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if items %}
+              {% for it in items %}
+              <tr>
+                <td>{{ it.sku }}</td>
+                <td>{{ it.name }}</td>
+                <td>{{ it.category }}</td>
+                <td class="text-end">{{ it.stock }}</td>
+                <td class="text-end">{{ it.min_stock }}</td>
+                <td>{{ it.unit }}</td>
+                <td class="text-end">Rp {{ it.buy_price|floatformat:0 }}</td>
+                <td class="text-end">Rp {{ it.sell_price|floatformat:0 }}</td>
+                <td>
+                  {% if it.stock <= it.min_stock %}
+                    <span class="badge text-bg-warning">Menipis</span>
+                  {% elif it.status == 'Habis' %}
+                    <span class="badge text-bg-danger">Habis</span>
+                  {% elif it.status == 'Nonaktif' %}
+                    <span class="badge text-bg-secondary">Nonaktif</span>
+                  {% else %}
+                    <span class="badge text-bg-success">Aktif</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary edit-btn" data-sku="{{ it.sku }}" data-name="{{ it.name }}" data-category="{{ it.category }}" data-stock="{{ it.stock }}" data-min-stock="{{ it.min_stock }}" data-unit="{{ it.unit }}" data-buy-price="{{ it.buy_price }}" data-sell-price="{{ it.sell_price }}"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-outline-danger delete-btn" data-sku="{{ it.sku }}" data-name="{{ it.name }}"><i class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="10" class="text-center text-muted">Tidak ada data</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted small">Menampilkan {{ items|length }} data</div>
+        <nav aria-label="Pagination">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item disabled"><span class="page-link">«</span></li>
+            <li class="page-item active"><span class="page-link">1</span></li>
+            <li class="page-item disabled"><span class="page-link">»</span></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Tambahkan Item Inventaris -->
+<div class="modal fade" id="addInventoryItemModal" tabindex="-1" aria-labelledby="addInventoryItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addInventoryItemModalLabel">Tambahkan Item Inventaris</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="addInventoryItemForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="id_item" class="form-label">ID Item</label>
+              <input type="text" class="form-control" id="id_item" name="id_item" required>
+            </div>
+            <div class="col-md-6">
+              <label for="jenis_item" class="form-label">Jenis Item</label>
+              <input type="text" class="form-control" id="jenis_item" name="jenis_item" required>
+            </div>
+            <div class="col-md-6">
+              <label for="kategori_item" class="form-label">Kategori Item</label>
+              <input type="text" class="form-control" id="kategori_item" name="kategori_item" required>
+            </div>
+            <div class="col-md-6">
+              <label for="subkategori_item" class="form-label">Subkategori Item</label>
+              <input type="text" class="form-control" id="subkategori_item" name="subkategori_item" required>
+            </div>
+            <div class="col-md-6">
+              <label for="nama_item" class="form-label">Nama Item</label>
+              <input type="text" class="form-control" id="nama_item" name="nama_item" required>
+            </div>
+            <div class="col-md-6">
+              <label for="tingkat_pemesanan_ulang" class="form-label">Tingkat Pemesanan Ulang</label>
+              <input type="number" class="form-control" id="tingkat_pemesanan_ulang" name="tingkat_pemesanan_ulang" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Tambahkan Jenis Barang -->
+<div class="modal fade" id="addItemTypeModal" tabindex="-1" aria-labelledby="addItemTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addItemTypeModalLabel">Tambahkan Jenis Barang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="addItemTypeForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="item_type" class="form-label">Jenis Barang</label>
+            <input type="text" class="form-control" id="item_type" name="item_type" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Tambahkan Barang -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addItemModalLabel">Tambahkan Barang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="addItemForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="item_name" class="form-label">Nama Barang</label>
+            <input type="text" class="form-control" id="item_name" name="item_name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Edit Item -->
+<div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editItemForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="edit_sku" class="form-label">SKU</label>
+              <input type="text" class="form-control" id="edit_sku" name="sku" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_name" class="form-label">Nama</label>
+              <input type="text" class="form-control" id="edit_name" name="name" required>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_category" class="form-label">Kategori</label>
+              <select class="form-select" id="edit_category" name="category" required>
+                <option value="">Pilih Kategori</option>
+                {% for cat in all_categories %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_stock" class="form-label">Stok</label>
+              <input type="number" class="form-control" id="edit_stock" name="stock" required>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_min_stock" class="form-label">Min Stok</label>
+              <input type="number" class="form-control" id="edit_min_stock" name="min_stock" required>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_unit" class="form-label">Satuan</label>
+              <input type="text" class="form-control" id="edit_unit" name="unit" required>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_buy_price" class="form-label">Harga Beli</label>
+              <input type="number" class="form-control" id="edit_buy_price" name="buy_price" required>
+            </div>
+            <div class="col-md-6">
+              <label for="edit_sell_price" class="form-label">Harga Jual</label>
+              <input type="number" class="form-control" id="edit_sell_price" name="sell_price" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteItemModal" tabindex="-1" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteItemModalLabel">Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Apakah Anda yakin ingin menghapus item <strong id="delete_item_name"></strong> dengan SKU <strong id="delete_item_sku"></strong>?</p>
+        <p class="text-danger">Tindakan ini tidak dapat dibatalkan.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Kategori -->
+<div class="modal fade" id="manageCategoriesModal" tabindex="-1" aria-labelledby="manageCategoriesModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manageCategoriesModalLabel">Kelola Kategori</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="manageCategoriesForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="new_category" class="form-label">Nama Kategori Baru</label>
+            <input type="text" class="form-control" name="new_category" placeholder="Nama Kategori Baru" required>
+          </div>
+          <h6>Daftar Kategori</h6>
+          <ul class="list-group">
+            <li class="list-group-item">Alat Tulis</li>
+            <li class="list-group-item">Kertas</li>
+            <li class="list-group-item">Aksesoris</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-primary">Tambah</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+<script>
+document.getElementById('addInventoryItemForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('{% url "dashboard:add_inventory_item" %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      // Show success notification
+      showNotification('Item inventaris berhasil ditambahkan!', 'success');
+      document.getElementById('addInventoryItemModal').querySelector('.btn-close').click();
+      // Optionally reload or update the table
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showNotification('Terjadi kesalahan saat menambahkan item.', 'error');
+    }
+  });
+});
+
+document.getElementById('addItemTypeForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('{% url "dashboard:add_item_type" %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showNotification('Jenis barang berhasil ditambahkan!', 'success');
+      document.getElementById('addItemTypeModal').querySelector('.btn-close').click();
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showNotification('Terjadi kesalahan saat menambahkan jenis barang.', 'error');
+    }
+  });
+});
+
+document.getElementById('addItemForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('{% url "dashboard:add_item" %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showNotification('Barang berhasil ditambahkan!', 'success');
+      document.getElementById('addItemModal').querySelector('.btn-close').click();
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showNotification('Terjadi kesalahan saat menambahkan barang.', 'error');
+    }
+  });
+});
+
+document.getElementById('manageCategoriesForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('{% url "dashboard:manage_categories" %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showNotification('Kategori berhasil ditambahkan!', 'success');
+      document.getElementById('manageCategoriesModal').querySelector('.btn-close').click();
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showNotification('Terjadi kesalahan saat menambahkan kategori.', 'error');
+    }
+  });
+});
+</script>
+
+<!-- Notification Styles and Script -->
+<style>
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification.success {
+  background-color: #28a745;
+}
+
+.notification.error {
+  background-color: #dc3545;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  }
+
+  // Edit Item Functionality
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const sku = this.getAttribute('data-sku');
+      const name = this.getAttribute('data-name');
+      const category = this.getAttribute('data-category');
+      const stock = this.getAttribute('data-stock');
+      const minStock = this.getAttribute('data-min-stock');
+      const unit = this.getAttribute('data-unit');
+      const buyPrice = this.getAttribute('data-buy-price');
+      const sellPrice = this.getAttribute('data-sell-price');
+
+      document.getElementById('edit_sku').value = sku;
+      document.getElementById('edit_name').value = name;
+      document.getElementById('edit_category').value = category;
+      document.getElementById('edit_stock').value = stock;
+      document.getElementById('edit_min_stock').value = minStock;
+      document.getElementById('edit_unit').value = unit;
+      document.getElementById('edit_buy_price').value = buyPrice;
+      document.getElementById('edit_sell_price').value = sellPrice;
+
+      const modal = new bootstrap.Modal(document.getElementById('editItemModal'));
+      modal.show();
+    });
+  });
+
+  // Delete Item Functionality
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const sku = this.getAttribute('data-sku');
+      const name = this.getAttribute('data-name');
+
+      document.getElementById('delete_item_sku').textContent = sku;
+      document.getElementById('delete_item_name').textContent = name;
+
+      const modal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
+      modal.show();
+
+      document.getElementById('confirmDeleteBtn').onclick = function() {
+        // Dummy delete functionality
+        showNotification(`Item ${name} berhasil dihapus!`, 'success');
+        const modalElement = document.getElementById('deleteItemModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+        setTimeout(() => location.reload(), 2000);
+      };
+    });
+  });
+
+  // Edit Item Form Submission
+  document.getElementById('editItemForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('{% url "dashboard:edit_inventory_item" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showNotification('Item berhasil diperbarui!', 'success');
+        const modalElement = document.getElementById('editItemModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+        setTimeout(() => location.reload(), 2000);
+      } else {
+        showNotification('Terjadi kesalahan saat memperbarui item.', 'error');
+      }
+    });
+  });
+});
+</script>

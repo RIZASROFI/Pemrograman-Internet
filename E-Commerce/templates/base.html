@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}RuangStok E-Commerce{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      :root {
+        --primary-color: #4e73df;
+        --secondary-color: #1cc88a;
+        --dark-color: #2e59d9;
+        --light-color: #f8f9fc;
+        --danger-color: #e74a3b;
+        --warning-color: #f6c23e;
+        --gray-color: #858796;
+      }
+
+      body {
+        background-color: var(--light-color);
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        display: flex;
+      }
+
+      /* === SIDEBAR === */
+      .sidebar {
+        width: 260px;
+        background-color: #fff;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .sidebar .brand {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .sidebar .brand img {
+        max-width: 80px;
+        height: auto;
+        margin-bottom: 0.5rem;
+      }
+
+      .sidebar .brand span {
+        display: block;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--primary-color);
+        margin-top: 0.3rem;
+      }
+
+      .sidebar .nav-link {
+        color: #333;
+        font-weight: 500;
+        padding: 0.7rem 1.2rem;
+        display: flex;
+        align-items: center;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        margin: 0.25rem 0.75rem;
+      }
+
+      .sidebar .nav-link i {
+        width: 22px;
+        margin-right: 12px;
+        font-size: 1.1rem;
+      }
+
+      .sidebar .nav-link:hover,
+      .sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      /* === MAIN CONTENT === */
+      {% if user.is_authenticated %}
+      .main-content {
+        margin-left: 260px;
+        flex-grow: 1;
+        padding: 1.5rem 2rem;
+      }
+      {% else %}
+      .main-content {
+        margin-left: 0;
+        flex-grow: 1;
+        padding: 1.5rem 2rem;
+      }
+      {% endif %}
+
+      .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: white;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        margin-bottom: 1rem;
+      }
+
+      .footer {
+        margin-top: 3rem;
+        padding: 1.5rem 0;
+        border-top: 1px solid #e3e6f0;
+        color: var(--gray-color);
+        text-align: center;
+      }
+
+      .alert {
+        border-radius: 0.5rem;
+        border: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    {% if user.is_authenticated %}
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/static/images/ruangstok_logo.jpeg" alt="RuangStok Logo">
+        <span>RuangStok<br>E-Commerce</span>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="/dashboard/"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a class="nav-link" href="/dashboard/inventory/"><i class="fas fa-boxes-stacked"></i> Persediaan</a>
+        <a class="nav-link" href="/dashboard/suppliers/"><i class="fas fa-truck-field"></i> Pemasok</a>
+        <a class="nav-link" href="#"><i class="fas fa-users"></i> Pelanggan</a>
+        <a class="nav-link" href="#"><i class="fas fa-cart-shopping"></i> Pembelian</a>
+        <a class="nav-link" href="#"><i class="fas fa-chart-line"></i> Penjualan</a>
+        <a class="nav-link" href="#"><i class="fas fa-receipt"></i> Tanda Terima</a>
+        <a class="nav-link" href="#"><i class="fas fa-credit-card"></i> Pembayaran</a>
+        <a class="nav-link" href="#"><i class="fas fa-file-lines"></i> Laporan</a>
+        <a class="nav-link" href="#"><i class="fas fa-user-gear"></i> Pengguna</a>
+        <a class="nav-link" href="#"><i class="fas fa-cog"></i> Pengaturan</a>
+        <hr>
+        <a class="nav-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+      </nav>
+    </aside>
+    {% endif %}
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      {% if user.is_authenticated %}
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+          <h5 class="m-0 fw-bold text-primary"><i class="{{ page_icon|default:'fas fa-tachometer-alt' }} me-2"></i>{{ page_title|default:'Dashboard' }}</h5>
+        </div>
+      </nav>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+            {% if message.tags == 'success' %}
+              <i class="fas fa-check-circle me-2"></i>
+            {% elif message.tags == 'error' %}
+              <i class="fas fa-exclamation-circle me-2"></i>
+            {% elif message.tags == 'warning' %}
+              <i class="fas fa-exclamation-triangle me-2"></i>
+            {% else %}
+              <i class="fas fa-info-circle me-2"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+
+      <footer class="footer">
+        <p>&copy; 2025 RuangStok E-Commerce. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Konfirmasi Keluar</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin keluar dari akun Anda?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <a href="/logout/" class="btn btn-danger">Keluar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

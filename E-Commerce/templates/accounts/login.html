@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Login - E-Commerce{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card card">
+    <div class="card-header text-center py-4">
+      <img src="/static/images/ruangstok_logo.jpeg" alt="RuangStok Logo" class="mb-3" style="max-width: 150px; height: auto;">
+      <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Login</h4>
+    </div>
+    <div class="card-body p-4">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-user"></i></span>
+            <input type="text" class="form-control" id="username" name="username" required placeholder="Masukkan username Anda">
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+            <input type="password" class="form-control" id="password" name="password" required placeholder="Masukkan password Anda">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </button>
+        
+        <div class="text-center">
+          <p class="mb-0">Belum punya akun? <a href="/register/" class="text-decoration-none">Daftar di sini</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
