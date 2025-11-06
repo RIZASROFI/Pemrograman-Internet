@@ -52,16 +52,28 @@ class DatabaseService {
       final ts = now.subtract(Duration(minutes: count - i));
       final docRef = col.doc();
 
-      // generate values; if makeBad then set mq135 very high or temperature high
-      final mq135 = makeBad ? 250 + i.toDouble() : (50 + i.toDouble());
-      final temperature = makeBad ? 30.0 + i % 5 : 20.0 + (i % 5);
+      // generate values; if makeBad then set values to exceed thresholds
+      final mq2 = makeBad ? 60.0 + i.toDouble() : 30.0 + (i % 10);
+      final mq3 = makeBad ? 160.0 + i.toDouble() : 100.0 + (i % 20);
+      final mq135 = makeBad ? 120.0 + i.toDouble() : 60.0 + (i % 20);
+      final temperature = makeBad ? 25.0 + i % 5 : 15.0 + (i % 5);
+      final humidity = makeBad ? 75.0 + (i % 5) : 50.0 + (i % 10);
+
+      // Determine status based on thresholds
+      final isTidakLayak = mq2 > 50 ||
+          mq3 > 150 ||
+          mq135 > 100 ||
+          temperature > 20 ||
+          humidity > 70;
+      final status = isTidakLayak ? 'Tidak Layak' : 'Layak';
 
       batch.set(docRef, {
-        'mq2': 5.0 + i.toDouble(),
-        'mq3': 2.0 + i.toDouble(),
+        'mq2': mq2,
+        'mq3': mq3,
         'mq135': mq135,
         'temperature': temperature,
-        'humidity': 60.0 + (i % 5),
+        'humidity': humidity,
+        'status': status,
         'timestamp': Timestamp.fromDate(ts),
       });
     }

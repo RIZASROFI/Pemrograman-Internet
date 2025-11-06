@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/database_service.dart';
+
 import '../../services/auth_service.dart';
 import '../../widgets/sensor_chart.dart';
 import '../../widgets/sensor_card.dart';
@@ -18,9 +18,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final DatabaseService _databaseService = DatabaseService();
-  bool _seeding = false;
-
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthService>(context);
@@ -157,65 +154,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           .textTheme
                           .titleMedium
                           ?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  // action buttons to seed data for development
-                  Row(children: [
-                    ElevatedButton.icon(
-                      onPressed: _seeding
-                          ? null
-                          : () async {
-                              setState(() {
-                                _seeding = true;
-                              });
-                              try {
-                                await _databaseService.seedDummyData(
-                                    count: 12, makeBad: false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text('Dummy data seeded')));
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Seed failed: $e')));
-                              } finally {
-                                setState(() {
-                                  _seeding = false;
-                                });
-                              }
-                            },
-                      icon: const Icon(Icons.bolt),
-                      label: Text(_seeding ? 'Seeding...' : 'Seed Dummy Data'),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent),
-                      onPressed: _seeding
-                          ? null
-                          : () async {
-                              setState(() {
-                                _seeding = true;
-                              });
-                              try {
-                                await _databaseService.seedDummyData(
-                                    count: 12, makeBad: true);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('Bad dummy data seeded')));
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Seed failed: $e')));
-                              } finally {
-                                setState(() {
-                                  _seeding = false;
-                                });
-                              }
-                            },
-                      icon: const Icon(Icons.warning),
-                      label: Text(_seeding ? 'Seeding...' : 'Seed Bad Data'),
-                    ),
-                  ]),
-                  const SizedBox(height: 12),
+
                   // placeholder large area
                   Container(
                       height: 280,
@@ -256,37 +195,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             timestamp: (latest['timestamp'] as Timestamp).toDate(),
           );
 
-          final status = _getStatus(sensor);
+          final status = sensor.status;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusCard(
-                    sensor.statusWithEmoji, Color(sensor.statusColor)),
+                _buildStatusCard(status),
                 const SizedBox(height: 16),
 
                 // Informasi keterangan layak dan tidak layak
                 _buildStatusExplanation(status),
-                const SizedBox(height: 16),
-
-                // DEBUG: tombol seed dummy data untuk testing grafik/status
-                if (kDebugMode)
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.bug_report),
-                    label: const Text('Seed Dummy (Tidak Layak)'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                    ),
-                    onPressed: () async {
-                      await _databaseService.seedDummyData(
-                          count: 12, makeBad: true);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Dummy data seeded')),
-                      );
-                    },
-                  ),
 
                 _buildSensorSummary(sensor),
 
@@ -300,53 +220,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildSensorDetails(sensor),
-
-                const SizedBox(height: 24),
-                Text(
-                  "Grafik Tren Sensor",
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // 📊 Grafik dari setiap sensor
-                SensorChart(
-                  title: "Tren Suhu (°C)",
-                  stream: _databaseService.getSensorHistoryStream(),
-                  valueGetter: (data) => data.temperature,
-                  color: Colors.orangeAccent,
-                  chartType: ChartType.bar,
-                ),
-                SensorChart(
-                  title: "Tren Kelembapan (%)",
-                  stream: _databaseService.getSensorHistoryStream(),
-                  valueGetter: (data) => data.humidity,
-                  color: Colors.blueAccent,
-                  chartType: ChartType.bar,
-                ),
-                SensorChart(
-                  title: "Tren Gas MQ2",
-                  stream: _databaseService.getSensorHistoryStream(),
-                  valueGetter: (data) => data.mq2,
-                  color: Colors.purpleAccent,
-                  chartType: ChartType.bar,
-                ),
-                SensorChart(
-                  title: "Tren Gas MQ3",
-                  stream: _databaseService.getSensorHistoryStream(),
-                  valueGetter: (data) => data.mq3,
-                  color: Colors.teal,
-                  chartType: ChartType.bar,
-                ),
-                SensorChart(
-                  title: "Tren Gas MQ135",
-                  stream: _databaseService.getSensorHistoryStream(),
-                  valueGetter: (data) => data.mq135,
-                  color: Colors.pinkAccent,
-                  chartType: ChartType.bar,
-                ),
               ],
             ),
           );
@@ -355,17 +228,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 🟢🟡🔴 Tentukan status daging berdasarkan semua sensor
+  // 🟢🔴 Tentukan status daging berdasarkan semua sensor
   String _getStatus(model.SensorData data) {
-    // Thresholds untuk Tidak Layak (high risk)
-    bool isTidakLayak = data.mq2 > 100 ||
-        data.mq3 > 200 ||
-        data.mq135 > 200 ||
-        data.temperature > 25 ||
-        data.humidity > 80;
-
-    // Thresholds untuk Perlu Diperhatikan (medium risk)
-    bool isPerluDiperhatikan = data.mq2 > 50 ||
+    // Thresholds untuk Tidak Layak (gabung medium dan high risk)
+    bool isTidakLayak = data.mq2 > 50 ||
         data.mq3 > 150 ||
         data.mq135 > 100 ||
         data.temperature > 20 ||
@@ -373,14 +239,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (isTidakLayak) {
       return "Tidak Layak";
-    } else if (isPerluDiperhatikan) {
-      return "Perlu Diperhatikan";
     } else {
       return "Layak";
     }
   }
 
-  Widget _buildStatusCard(String status, Color color) {
+  Widget _buildStatusCard(String status) {
+    Color color = status == "Layak" ? Colors.green : Colors.redAccent;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -444,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onDetailTap: () => _navigateToSensorDetail('MQ2'),
       ),
       SensorCard(
-        title: "MQ3 - Alkohol/VOC",
+        title: "MQ3 - Alkohol dan Volatile Organic Compounds",
         value: data.mq3.toStringAsFixed(1),
         unit: "ppm",
         trend: getTrend(data.mq3, 150),
@@ -452,7 +317,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onDetailTap: () => _navigateToSensorDetail('MQ3'),
       ),
       SensorCard(
-        title: "MQ135 - Amonia/CO₂",
+        title: "MQ135 - Amonia dan CO₂",
         value: data.mq135.toStringAsFixed(1),
         unit: "ppm",
         trend: getTrend(data.mq135, 100),
@@ -505,14 +370,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             "Daging dalam kondisi baik dan aman untuk dikonsumsi. Semua parameter sensor berada dalam batas normal.";
         color = Colors.green;
         break;
-      case "Perlu Diperhatikan":
-        explanation =
-            "Daging menunjukkan tanda-tanda awal pembusukan. Periksa kondisi penyimpanan dan segera gunakan.";
-        color = Colors.orangeAccent;
-        break;
       case "Tidak Layak":
         explanation =
-            "Daging tidak aman untuk dikonsumsi. Tingkat gas atau suhu menunjukkan pembusukan yang signifikan.";
+            "Daging menunjukkan tanda-tanda awal pembusukan. Periksa kondisi penyimpanan dan segera gunakan.";
         color = Colors.redAccent;
         break;
       default:
@@ -564,23 +424,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "MQ2 - Gas Umum",
           data.mq2,
           "ppm",
-          "Mendeteksi gas umum seperti LPG, propana, hidrogen, dan metana. Nilai normal: < 50 ppm",
-          data.mq2 > 50 ? "Tinggi - kemungkinan kebocoran gas" : "Normal",
+          "Mendeteksi gas umum seperti LPG, propana, hidrogen, dan metana. Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan gas hidrogen (H2) dan metana (CH4) yang dihasilkan oleh bakteri anaerob saat daging mulai membusuk. Nilai normal: < 50 ppm. Peningkatan gas ini menunjukkan tahap awal pembusukan.",
+          data.mq2 > 50 ? "Tinggi - indikasi pembusukan awal" : "Normal",
           data.mq2 > 50 ? Colors.redAccent : Colors.green,
         ),
         _buildSensorDetailCard(
-          "MQ3 - Alkohol/VOC",
+          "MQ3 - Alkohol dan Volatile Organic Compounds",
           data.mq3,
           "ppm",
-          "Mendeteksi alkohol, benzena, dan senyawa organik volatil. Nilai normal: < 150 ppm",
+          "Mendeteksi alkohol, benzena, dan senyawa organik volatil (VOC). Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan alkohol (etanol) dan VOC seperti asetaldehida, aseton, dan senyawa sulfur yang dihasilkan saat daging mulai membusuk. Nilai normal: < 150 ppm. Peningkatan alkohol menunjukkan aktivitas fermentasi bakteri.",
           data.mq3 > 150 ? "Tinggi - indikasi pembusukan" : "Normal",
           data.mq3 > 150 ? Colors.redAccent : Colors.green,
         ),
         _buildSensorDetailCard(
-          "MQ135 - Amonia/CO₂",
+          "MQ135 - Amonia dan CO₂",
           data.mq135,
           "ppm",
-          "Mendeteksi amonia dan karbon dioksida dari pembusukan. Nilai normal: < 100 ppm",
+          "Mendeteksi amonia (NH3) dan karbon dioksida (CO2) dari proses pembusukan. Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan amonia yang dihasilkan dari dekomposisi protein oleh bakteri proteolitik, dan CO2 dari respirasi mikroorganisme. Nilai normal: < 100 ppm. Amonia tinggi menunjukkan pembusukan aktif dengan dekomposisi protein.",
           data.mq135 > 100 ? "Tinggi - pembusukan aktif" : "Normal",
           data.mq135 > 100 ? Colors.redAccent : Colors.green,
         ),
@@ -588,7 +448,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "DHT11 - Suhu",
           data.temperature,
           "°C",
-          "Mengukur suhu lingkungan penyimpanan. Suhu optimal: 0-4°C untuk pendinginan",
+          "Mengukur suhu lingkungan penyimpanan daging. Suhu optimal: 0-4°C untuk pendinginan. Dalam konteks deteksi pembusukan daging sapi, suhu >25°C mempercepat pertumbuhan bakteri seperti Salmonella, E. coli, dan Clostridium yang menyebabkan pembusukan. Suhu tinggi mengakselerasi aktivitas enzimatik dan pertumbuhan mikroorganisme.",
           data.temperature > 25
               ? "Terlalu panas - risiko pembusukan"
               : "Optimal",
@@ -598,7 +458,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "DHT11 - Kelembapan",
           data.humidity,
           "%",
-          "Mengukur kelembapan udara. Kelembapan optimal: 60-80% untuk penyimpanan",
+          "Mengukur kelembapan udara penyimpanan daging. Kelembapan optimal: 60-80% untuk penyimpanan. Dalam konteks deteksi pembusukan daging sapi, kelembapan tinggi (>70%) mendorong pertumbuhan jamur dan bakteri seperti Aspergillus dan Penicillium yang menyebabkan pembusukan. Kelembapan rendah dapat menyebabkan pengeringan daging.",
           data.humidity > 70 ? "Terlalu lembab - risiko jamur" : "Optimal",
           data.humidity > 70 ? Colors.orangeAccent : Colors.green,
         ),
