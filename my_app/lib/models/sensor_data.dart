@@ -8,6 +8,10 @@ class SensorData {
   final double mq135;         // Sensor Gas MQ-135
   final String status;        // Status daging: "LAYAK" / "TIDAK LAYAK"
   final DateTime timestamp;   // Waktu pembacaan data
+  final double skorGas;       // Skor komponen gas (0-100)
+  final double skorSuhu;      // Skor komponen suhu (0-100)
+  final double skorRH;        // Skor komponen kelembapan (0-100)
+  final double skorTotal;     // Skor total (0-100)
 
   SensorData({
     required this.temperature,
@@ -17,6 +21,10 @@ class SensorData {
     required this.mq135,
     required this.status,
     required this.timestamp,
+    this.skorGas = 0,
+    this.skorSuhu = 0,
+    this.skorRH = 0,
+    this.skorTotal = 0,
   });
 
   /// Factory untuk membuat objek dari data Firestore / JSON
@@ -31,6 +39,10 @@ class SensorData {
       timestamp: map['timestamp'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['timestamp'])
           : DateTime.now(),
+      skorGas: (map['skorGas'] ?? 0.0).toDouble(),
+      skorSuhu: (map['skorSuhu'] ?? 0.0).toDouble(),
+      skorRH: (map['skorRH'] ?? 0.0).toDouble(),
+      skorTotal: (map['skorTotal'] ?? 0.0).toDouble(),
     );
   }
 
@@ -60,6 +72,10 @@ class SensorData {
       humidity: humidity.toDouble(),
       status: data['status'] ?? 'TIDAK LAYAK',
       timestamp: timestamp,
+      skorGas: (data['skorGas'] ?? 0.0).toDouble(),
+      skorSuhu: (data['skorSuhu'] ?? 0.0).toDouble(),
+      skorRH: (data['skorRH'] ?? 0.0).toDouble(),
+      skorTotal: (data['skorTotal'] ?? 0.0).toDouble(),
     );
   }
 
@@ -73,6 +89,10 @@ class SensorData {
       'mq135': mq135,
       'status': status,
       'timestamp': timestamp.millisecondsSinceEpoch,
+      'skorGas': skorGas,
+      'skorSuhu': skorSuhu,
+      'skorRH': skorRH,
+      'skorTotal': skorTotal,
     };
   }
 

@@ -31,7 +31,20 @@ class AuthService with ChangeNotifier {
       notifyListeners();
       return null;
     } on FirebaseAuthException catch (e) {
-      return "FirebaseAuth Error: ${e.code} - ${e.message}";
+      switch (e.code) {
+        case 'user-not-found':
+          return 'Email tidak terdaftar';
+        case 'wrong-password':
+          return 'Password salah';
+        case 'invalid-email':
+          return 'Format email tidak valid';
+        case 'user-disabled':
+          return 'Akun telah dinonaktifkan';
+        case 'too-many-requests':
+          return 'Terlalu banyak percobaan. Coba lagi nanti';
+        default:
+          return 'Login gagal: ${e.message}';
+      }
     } catch (e) {
       return "Error: $e";
     }
@@ -57,7 +70,18 @@ class AuthService with ChangeNotifier {
       notifyListeners();
       return null;
     } on FirebaseAuthException catch (e) {
-      return "FirebaseAuth Error: ${e.code} - ${e.message}";
+      switch (e.code) {
+        case 'email-already-in-use':
+          return 'Email sudah terdaftar. Silakan login atau gunakan email lain';
+        case 'invalid-email':
+          return 'Format email tidak valid';
+        case 'operation-not-allowed':
+          return 'Registrasi tidak diizinkan';
+        case 'weak-password':
+          return 'Password terlalu lemah. Gunakan minimal 6 karakter';
+        default:
+          return 'Registrasi gagal: ${e.message}';
+      }
     } catch (e) {
       return "Error: $e";
     }

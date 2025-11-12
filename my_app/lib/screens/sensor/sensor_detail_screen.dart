@@ -88,52 +88,53 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
 
     switch (widget.sensorType) {
       case 'MQ2':
-        title = 'MQ2 - Gas Umum';
+        title = 'MQ2 - Gas H₂ & CH₄';
         description =
-            'Mendeteksi gas umum seperti LPG, propana, hidrogen, dan metana. Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan gas hidrogen (H2) dan metana (CH4) yang dihasilkan oleh bakteri anaerob saat daging mulai membusuk. Nilai normal: < 50 ppm. Peningkatan gas ini menunjukkan tahap awal pembusukan.';
+            'Mendeteksi gas hidrogen (H₂) dan metana (CH₄) yang dihasilkan oleh bakteri anaerob saat daging mulai membusuk. Penelitian menunjukkan daging segar menghasilkan 200-300 ppm, sedangkan daging busuk menghasilkan >1000 ppm. Peningkatan gas ini adalah indikator awal pembusukan oleh bakteri penghasil gas seperti Clostridium spp.';
         value = data.mq2;
         unit = 'ppm';
-        status = data.mq2 > 50 ? 'Tinggi - indikasi pembusukan awal' : 'Normal';
-        statusColor = data.mq2 > 50 ? Colors.redAccent : Colors.green;
+        status = data.mq2 > 1000 ? 'Sangat Tinggi - Spoiled' : (data.mq2 > 300 ? 'Warning - Tahap Awal' : 'Normal - Fresh');
+        statusColor = data.mq2 > 1000 ? Colors.red : (data.mq2 > 300 ? Colors.orange : Colors.green);
         break;
       case 'MQ3':
-        title = 'MQ3 - Alkohol dan Volatile Organic Compounds';
+        title = 'MQ3 - VOC & Alkohol (Etanol)';
         description =
-            'Mendeteksi alkohol, benzena, dan senyawa organik volatil (VOC). Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan alkohol (etanol) dan VOC seperti asetaldehida, aseton, dan senyawa sulfur yang dihasilkan saat daging mulai membusuk. Nilai normal: < 150 ppm. Peningkatan alkohol menunjukkan aktivitas fermentasi bakteri.';
+            'Mendeteksi senyawa organik volatil (VOC) dan etanol dari fermentasi bakteri. Daging segar: 100-300 ppm, daging busuk: >800 ppm. VOC seperti asetaldehida, aseton, dan senyawa sulfur adalah biomarker kuat pembusukan. Etanol meningkat karena aktivitas fermentasi bakteri Lactobacillus dan Pseudomonas pada daging yang membusuk.';
         value = data.mq3;
         unit = 'ppm';
-        status = data.mq3 > 150 ? 'Tinggi - indikasi pembusukan' : 'Normal';
-        statusColor = data.mq3 > 150 ? Colors.redAccent : Colors.green;
+        status = data.mq3 > 800 ? 'Sangat Tinggi - Spoiled' : (data.mq3 > 300 ? 'Warning - Fermentasi Aktif' : 'Normal - Fresh');
+        statusColor = data.mq3 > 800 ? Colors.red : (data.mq3 > 300 ? Colors.orange : Colors.green);
         break;
       case 'MQ135':
-        title = 'MQ135 - Amonia dan CO₂';
+        title = 'MQ135 - Amonia (NH₃) & CO₂';
         description =
-            'Mendeteksi amonia (NH3) dan karbon dioksida (CO2) dari proses pembusukan. Dalam konteks deteksi pembusukan daging sapi, sensor ini mendeteksi peningkatan amonia yang dihasilkan dari dekomposisi protein oleh bakteri proteolitik, dan CO2 dari respirasi mikroorganisme. Nilai normal: < 100 ppm. Amonia tinggi menunjukkan pembusukan aktif dengan dekomposisi protein.';
+            'Mendeteksi amonia (NH₃) dari degradasi protein dan CO₂ dari respirasi bakteri. Daging segar: 30-100 ppm, daging busuk: >300 ppm. Amonia adalah hasil dekomposisi protein oleh bakteri proteolitik (Pseudomonas, Shewanella). Peningkatan NH₃ menunjukkan pembusukan lanjut dengan protein breakdown aktif.';
         value = data.mq135;
         unit = 'ppm';
-        status = data.mq135 > 100 ? 'Tinggi - pembusukan aktif' : 'Normal';
-        statusColor = data.mq135 > 100 ? Colors.redAccent : Colors.green;
+        status = data.mq135 > 300 ? 'Sangat Tinggi - Spoiled' : (data.mq135 > 100 ? 'Warning - Degradasi Protein' : 'Normal - Fresh');
+        statusColor = data.mq135 > 300 ? Colors.red : (data.mq135 > 100 ? Colors.orange : Colors.green);
         break;
       case 'Temperature':
-        title = 'DHT11 - Suhu';
+        title = 'DHT11 - Temperature Control';
         description =
-            'Mengukur suhu lingkungan penyimpanan daging. Suhu optimal: 0-4°C untuk pendinginan. Dalam konteks deteksi pembusukan daging sapi, suhu >25°C mempercepat pertumbuhan bakteri seperti Salmonella, E. coli, dan Clostridium yang menyebabkan pembusukan. Suhu tinggi mengakselerasi aktivitas enzimatik dan pertumbuhan mikroorganisme.';
+            'Mengukur suhu lingkungan penyimpanan daging. Suhu optimal: 0-4°C (refrigerated), aman: <10°C. Suhu >15°C sangat berbahaya karena mempercepat pertumbuhan bakteri patogen (Salmonella, E. coli, Listeria). Pada suhu >15°C, bakteri berkembang biak dengan cepat (doubling time ~20 menit), mengakselerasi pembusukan.';
         value = data.temperature;
         unit = '°C';
-        status = data.temperature > 25
-            ? 'Terlalu panas - risiko pembusukan'
-            : 'Optimal';
-        statusColor = data.temperature > 25 ? Colors.redAccent : Colors.green;
+        status = data.temperature > 15
+            ? 'Berbahaya - bakteri cepat berkembang'
+            : (data.temperature > 10 ? 'Warning - suhu naik' : 'Optimal - safe storage');
+        statusColor = data.temperature > 15 ? Colors.red : (data.temperature > 10 ? Colors.orange : Colors.green);
         break;
       case 'Humidity':
-        title = 'DHT11 - Kelembapan';
+        title = 'DHT11 - Kelembapan Udara';
         description =
-            'Mengukur kelembapan udara di lingkungan penyimpanan. Kelembapan optimal: 60-80% untuk penyimpanan. Dalam konteks deteksi pembusukan daging sapi, kelembapan >70% mendorong pertumbuhan jamur (mold) dan bakteri seperti Pseudomonas dan Lactobacillus yang menyebabkan pembusukan. Kelembapan tinggi juga mempercepat oksidasi lemak dan perubahan tekstur daging.';
+            'Mengukur kelembapan udara di lingkungan penyimpanan. Kelembapan optimal: 75-90% untuk daging segar. Kelembapan >90% meningkatkan risiko pertumbuhan jamur (mold) dan bakteri seperti Pseudomonas yang menyebabkan pembusukan. Kelembapan <70% menyebabkan daging mengering, perubahan tekstur, dan penurunan kualitas.';
         value = data.humidity;
         unit = '%';
-        status =
-            data.humidity > 70 ? 'Terlalu lembab - risiko jamur' : 'Optimal';
-        statusColor = data.humidity > 70 ? Colors.orangeAccent : Colors.green;
+        status = data.humidity > 90
+            ? 'Terlalu lembab - risiko jamur'
+            : (data.humidity < 75 ? 'Terlalu kering - tekstur rusak' : 'Optimal');
+        statusColor = (data.humidity > 90 || data.humidity < 75) ? Colors.orange : Colors.green;
         break;
       default:
         title = widget.sensorType;

@@ -22,6 +22,12 @@ dependencies:
   # === 🎨 UI & Grafik ===
   fl_chart: ^0.65.0                   # Untuk menampilkan grafik sensor (line chart, bar chart)
   google_fonts: ^6.2.1                # Font yang lebih modern dan elegan
+  shimmer: ^3.0.0                     # Loading skeleton effect
+  animated_text_kit: ^4.2.2           # Text animation
+  lottie: ^3.1.2                      # Lottie animations
+  
+  # === 🌙 Theme & Dark Mode ===
+  shared_preferences: ^2.2.3          # Simpan preferensi dark mode
 
   # === 🧠 State Management & Utility ===
   provider: ^6.1.1                    # Manajemen state (AuthService, SensorService, dsb)

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/custom_button.dart';
+import '../main_navigation_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -47,339 +52,270 @@ class _LoginScreenState extends State<LoginScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+      } else {
+        // Login successful, navigate to main app
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const MainNavigationScreen(),
+            ),
+            (route) => false,
+          );
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8B4513), // Dark brown
-              Color(0xFFA0522D), // Sienna
-              Color(0xFFCD853F), // Peru
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 40),
-
-                    // New Modern Logo Design
-                    Container(
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(80),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7FA),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo/Icon
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: Stack(
-                        children: [
-                          // Background Circle
-                          Container(
-                            width: 160,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF8B4513),
-                                  Color(0xFFA0522D),
-                                ],
-                              ),
-                            ),
-                          ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.food_bank_rounded,
+                      size: 70,
+                      color: Colors.white,
+                    ),
+                  ),
 
-                          // Main Icon with Shield
-                          Center(
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
+                  const SizedBox(height: 32),
+
+                  // Title
+                  Text(
+                    'Smart Beef Monitoring',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'Monitoring Kualitas Daging Real-time',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: isDark ? Colors.white70 : Colors.grey[600],
+                    ),
+                  ),
+
+                  const SizedBox(height: 48),
+                  const SizedBox(height: 48),
+
+                  // Email Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: _emailController,
+                      style: GoogleFonts.poppins(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        hintText: 'Masukkan email',
+                        labelStyle: GoogleFonts.poppins(
+                          color: isDark ? Colors.white70 : Colors.grey[700],
+                        ),
+                        hintStyle: GoogleFonts.poppins(
+                          color: Colors.grey[400],
+                        ),
+                        prefixIcon: Icon(
+                          Icons.email_rounded,
+                          color: isDark ? Colors.white70 : const Color(0xFF2E7D32),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.transparent,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email tidak boleh kosong';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value)) {
+                          return 'Format email tidak valid';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Password Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: GoogleFonts.poppins(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        hintText: 'Masukkan password',
+                        labelStyle: GoogleFonts.poppins(
+                          color: isDark ? Colors.white70 : Colors.grey[700],
+                        ),
+                        hintStyle: GoogleFonts.poppins(
+                          color: Colors.grey[400],
+                        ),
+                        prefixIcon: Icon(
+                          Icons.lock_rounded,
+                          color: isDark ? Colors.white70 : const Color(0xFF2E7D32),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_rounded
+                                : Icons.visibility_off_rounded,
+                            color: isDark ? Colors.white70 : Colors.grey[600],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.transparent,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password tidak boleh kosong';
+                        }
+                        if (value.length < 6) {
+                          return 'Password minimal 6 karakter';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signIn,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
                                 color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
+                                strokeWidth: 2,
                               ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Shield Base
-                                  Icon(
-                                    Icons.health_and_safety,
-                                    size: 70,
-                                    color: Color(0xFF8B4513),
-                                  ),
-
-                                  // Meat Icon inside Shield
-                                  Positioned(
-                                    bottom: 18,
-                                    child: Icon(
-                                      Icons.restaurant_menu,
-                                      size: 28,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-
-                                  // Wave/Chart line
-                                  Positioned(
-                                    top: 22,
-                                    child: Container(
-                                      width: 40,
-                                      height: 2,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                ],
+                            )
+                          : Text(
+                              'Login',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-
-                          // IoT Sensor dots
-                          Positioned(
-                            top: 25,
-                            right: 25,
-                            child: Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // ML Chip icon
-                          Positioned(
-                            bottom: 25,
-                            left: 25,
-                            child: Icon(
-                              Icons.memory,
-                              size: 16,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
+                  ),
 
-                    SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
-                    // App Title
-                    Text(
-                      'Sistem Monitoring\nKesegaran Daging Sapi',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.3,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: 8),
-
-                    Text(
-                      'Monitoring Real-time dengan Sensor IoT\n& Machine Learning',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: 48),
-
-                    // Form Card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            // Email Field
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                labelStyle: TextStyle(color: Color(0xFF8B4513)),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Color(0xFF8B4513)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color: Color(0xFF8B4513), width: 2),
-                                ),
-                                prefixIcon:
-                                    Icon(Icons.email, color: Color(0xFF8B4513)),
-                                filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.8),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Email tidak boleh kosong';
-                                }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                    .hasMatch(value)) {
-                                  return 'Format email tidak valid';
-                                }
-                                return null;
-                              },
-                            ),
-
-                            SizedBox(height: 20),
-
-                            // Password Field
-                            TextFormField(
-                              controller: _passwordController,
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                labelStyle: TextStyle(color: Color(0xFF8B4513)),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Color(0xFF8B4513)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color: Color(0xFF8B4513), width: 2),
-                                ),
-                                prefixIcon:
-                                    Icon(Icons.lock, color: Color(0xFF8B4513)),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility
-                                        : Icons.visibility_off,
-                                    color: Color(0xFF8B4513),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                                filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.8),
-                              ),
-                              obscureText: _obscurePassword,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Password tidak boleh kosong';
-                                }
-                                if (value.length < 6) {
-                                  return 'Password minimal 6 karakter';
-                                }
-                                return null;
-                              },
-                            ),
-
-                            SizedBox(height: 28),
-
-                            // Login Button
-                            CustomButton(
-                              text: 'Masuk',
-                              onPressed: _isLoading ? null : _signIn,
-                              isLoading: _isLoading,
-                              backgroundColor: Color(0xFF8B4513),
-                              foregroundColor: Colors.white,
-                            ),
-
-                            SizedBox(height: 20),
-
-                            // Register Link
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Belum punya akun? ',
-                                  style: TextStyle(
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              RegisterScreen()),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Daftar disini',
-                                    style: TextStyle(
-                                      color: Color(0xFF8B4513),
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                  // Register Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Belum punya akun? ',
+                        style: GoogleFonts.poppins(
+                          color: isDark ? Colors.white70 : Colors.grey[600],
                         ),
                       ),
-                    ),
-
-                    SizedBox(height: 40),
-
-                    // Footer
-                    Text(
-                      '© 2024 Beef Freshness Monitoring System',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Daftar',
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFF2E7D32),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
